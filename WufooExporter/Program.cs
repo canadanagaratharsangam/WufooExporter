@@ -10,7 +10,8 @@ namespace WufooExporter
 {
     class Program
     {
-        static List<Entry> m_formEntries = new List<Entry>(); 
+        private const int MAX_PAGESIZE = 100;
+        private static List<Entry> m_formEntries = new List<Entry>(); 
         static void Main(string[] args)
         {
             GetEntries();
@@ -19,10 +20,15 @@ namespace WufooExporter
 
         private static async void GetEntries()
         {
-            int l_totalPages = 5;
-            for (int i = 0; i < l_totalPages; i++)
+            int entryCount = RestApiCaller.GetEntryCount().Result;
+            if (entryCount == 0)
+                return;
+
+            int l_numberOfPages = (int)Math.Ceiling((double)entryCount / (double)MAX_PAGESIZE);
+            
+            for (int i = 0; i < l_numberOfPages; i++)
             {
-                var l_json = RestApiCaller.GetJsonFromApi(i).Result;
+                var l_json = RestApiCaller.GetJsonEntriesFromApi(i*MAX_PAGESIZE, MAX_PAGESIZE).Result;
                 if (String.IsNullOrWhiteSpace(l_json))
                     return;
                 List<Entry> l_entries = JsonConvert.DeserializeObject<RootObject>(l_json).Entries;
