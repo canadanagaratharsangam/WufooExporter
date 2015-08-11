@@ -51,8 +51,8 @@ namespace WufooExporter
                l_distinctEntries.Where(i => String.IsNullOrWhiteSpace(i.LetterOfAttestationLink) && i.CompletedPages < 3
                ).ToList();
 
-            DownloadAndSaveEntries(l_completeDistinctApplicationsWithDocuments, "With 1 or more Document");
-            DownloadAndSaveEntries(l_completeDistinctApplicationsWihoutDocuments, "With No Documents");
+            DownloadAndSaveEntries(l_completeDistinctApplicationsWithDocuments, "Complete with 1 or more documents");
+            DownloadAndSaveEntries(l_completeDistinctApplicationsWihoutDocuments, "Complete with no documents");
             DownloadAndSaveEntries(l_incompleteDistinctApplications, "Incomplete Submissions");
         }
 
