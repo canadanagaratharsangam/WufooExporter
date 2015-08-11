@@ -14,11 +14,17 @@ namespace WufooExporter
         private static List<Entry> m_formEntries = new List<Entry>(); 
         static void Main(string[] args)
         {
-            GetEntries();
-            
+            LoadFormEntries();
+            SaveFormEntries();
+
         }
 
-        private static async void GetEntries()
+        private static void SaveFormEntries()
+        {
+            EntryExporter.SaveEntries(m_formEntries);
+        }
+
+        private static async void LoadFormEntries()
         {
             int entryCount = RestApiCaller.GetEntryCount().Result;
             if (entryCount == 0)
@@ -34,7 +40,6 @@ namespace WufooExporter
                 List<Entry> l_entries = JsonConvert.DeserializeObject<RootObject>(l_json).Entries;
                 m_formEntries.AddRange(l_entries);
             }
-            int l_enumerable = m_formEntries.Select(i => i.EntryId).Distinct().Count();
         }
     }
 }
