@@ -39,17 +39,21 @@ namespace WufooExporter
                 }
             }
            
-            List<Entry> l_completeDistinctApplications =
+            List<Entry> l_completeDistinctApplicationsWithDocuments =
                l_distinctEntries.Where(i => !String.IsNullOrWhiteSpace(i.LetterOfAttestationLink)
                ).ToList();
 
-            List<Entry> l_incompleteDistinctApplications =
-               l_distinctEntries.Where(i => String.IsNullOrWhiteSpace(i.LetterOfAttestationLink)
+            List<Entry> l_completeDistinctApplicationsWihoutDocuments =
+               l_distinctEntries.Where(i => String.IsNullOrWhiteSpace(i.LetterOfAttestationLink) && i.CompletedPages==3
                ).ToList();
 
-            DownloadAndSaveEntries(l_completeDistinctApplications, "With 1 or more Document");
-            DownloadAndSaveEntries(l_incompleteDistinctApplications, "With No Documents");
+            List<Entry> l_incompleteDistinctApplications =
+               l_distinctEntries.Where(i => String.IsNullOrWhiteSpace(i.LetterOfAttestationLink) && i.CompletedPages < 3
+               ).ToList();
 
+            DownloadAndSaveEntries(l_completeDistinctApplicationsWithDocuments, "With 1 or more Document");
+            DownloadAndSaveEntries(l_completeDistinctApplicationsWihoutDocuments, "With No Documents");
+            DownloadAndSaveEntries(l_incompleteDistinctApplications, "Incomplete Submissions");
         }
 
         private static Entry MergeEntries(Entry entry, Entry existingEntry)
