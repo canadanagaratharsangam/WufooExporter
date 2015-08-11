@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Xml.Schema;
 
 namespace WufooExporter
@@ -85,11 +86,15 @@ namespace WufooExporter
 
         private static void DownloadAndCreateFolder(Entry entry, string directoryName)
         {
-            l_entryFolder = Path.Combine(m_saveFolder, directoryName, entry.EntryId.ToString());
+            l_entryFolder = Path.Combine(m_saveFolder, directoryName, entry.EntryId.ToString() + " - " + entry.Email);
             if (!Directory.Exists(l_entryFolder))
             {
                 Directory.CreateDirectory(l_entryFolder);
             }
+            StreamWriter l_writer =
+                File.CreateText(Path.Combine(l_entryFolder, entry.EntryId + " - " + entry.Email + ".txt"));
+            WriteEntryToFile(l_writer, entry);
+            l_writer.Close();
             string l_letterOfAttestationLink = GetDocumentLink(entry.LetterOfAttestationLink);
             string l_additionalDocument1 = GetDocumentLink(entry.AdditionalDocument1);
             string l_additionalDocument2 = GetDocumentLink(entry.AdditionalDocument2);
@@ -97,45 +102,74 @@ namespace WufooExporter
             string l_additionalDocument4 = GetDocumentLink(entry.AdditionalDocument4);
 
             WebClient l_Client = new WebClient();
-            if (!String.IsNullOrWhiteSpace(l_letterOfAttestationLink))
-            {
-                var l_lastIndexOfPeriod = l_letterOfAttestationLink.LastIndexOf(".", StringComparison.Ordinal);
-                string l_extension = l_letterOfAttestationLink.Substring(l_lastIndexOfPeriod + 1);
-                l_Client.DownloadFile(l_letterOfAttestationLink,
-                    Path.Combine(l_entryFolder, "LetterOfAttestation." + l_extension));
-            }
+            DownloadDocument(l_letterOfAttestationLink, l_Client, "LetterOfAttestation");
+            DownloadDocument(l_additionalDocument1, l_Client, "AdditionalDocument1");
+            DownloadDocument(l_additionalDocument2, l_Client, "AdditionalDocument2");
+            DownloadDocument(l_additionalDocument3, l_Client, "AdditionalDocument3");
+            DownloadDocument(l_additionalDocument4, l_Client, "AdditionalDocument4");
 
-            if (!String.IsNullOrWhiteSpace(l_additionalDocument1))
-            {
-                var l_lastIndexOfPeriod = l_additionalDocument1.LastIndexOf(".", StringComparison.Ordinal);
-                string l_extension = l_additionalDocument1.Substring(l_lastIndexOfPeriod + 1);
-                l_Client.DownloadFile(l_additionalDocument1,
-                    Path.Combine(l_entryFolder, "AdditionalDocument1." + l_extension));
-            }
+        }
 
-            if (!String.IsNullOrWhiteSpace(l_additionalDocument2))
+        private static void DownloadDocument(string link, WebClient client, string fileName)
+        {
+            //LetterOfAttestation
+            if (!String.IsNullOrWhiteSpace(link))
             {
-                var l_lastIndexOfPeriod = l_additionalDocument2.LastIndexOf(".", StringComparison.Ordinal);
-                string l_extension = l_additionalDocument2.Substring(l_lastIndexOfPeriod + 1);
-                l_Client.DownloadFile(l_additionalDocument2,
-                    Path.Combine(l_entryFolder, "additionalDocument2." + l_extension));
+                var l_lastIndexOfPeriod = link.LastIndexOf(".", StringComparison.Ordinal);
+                string l_extension = link.Substring(l_lastIndexOfPeriod + 1);
+                var l_destinationFileName = l_extension.Length > 4 ? Path.Combine(l_entryFolder, fileName) : Path.Combine(l_entryFolder, fileName + "." + l_extension);
+                if (!File.Exists(l_destinationFileName))
+                    client.DownloadFile(link, l_destinationFileName);
             }
+        }
 
-            if (!String.IsNullOrWhiteSpace(l_additionalDocument3))
-            {
-                var l_lastIndexOfPeriod = l_additionalDocument3.LastIndexOf(".", StringComparison.Ordinal);
-                string l_extension = l_additionalDocument3.Substring(l_lastIndexOfPeriod + 1);
-                l_Client.DownloadFile(l_additionalDocument3,
-                    Path.Combine(l_entryFolder, "additionalDocument3." + l_extension));
-            }
+        private static void WriteEntryToFile(StreamWriter writer, Entry entry)
+        {
+            writer.WriteLine("Name:" + entry.Name);
+            writer.WriteLine("Father's Name: " + entry.FathersName);
+            writer.WriteLine("Mother's Name: " + entry.MothersName);
+            writer.WriteLine("Date of Birth: " + entry.DateOfBirth);
+            writer.WriteLine("Email: " + entry.Email);
+            writer.WriteLine("Phone: " + entry.Phone);
+            writer.WriteLine("Address:");
+            writer.Write(GetMailingAddress(entry));
+            writer.WriteLine("Nagarathar Village: " + entry.NagaratharVillage);
+            writer.WriteLine("Degree: " + entry.Degree);
+            writer.WriteLine("Specialization: " + entry.Specialization);
+            writer.WriteLine("Year of Study: " + entry.YearOfStudy);
+            writer.WriteLine("College Name: " + entry.College);
+            writer.WriteLine("College Address:");
+            writer.Write(GetCollegeAddress(entry));
+            writer.WriteLine("Annual Family Income: " + entry.AnnualFamilyIncome);
+            writer.WriteLine("Extra Curricular Activities: " + entry.ExtraCurricularActivities);
+            writer.WriteLine("Additional Comments: " + entry.AdditionalComments);
+            writer.WriteLine("Submitted on: " + entry.DateCreated.ToShortDateString());
+        }
 
-            if (!String.IsNullOrWhiteSpace(l_additionalDocument4))
-            {
-                var l_lastIndexOfPeriod = l_additionalDocument4.LastIndexOf(".", StringComparison.Ordinal);
-                string l_extension = l_additionalDocument4.Substring(l_lastIndexOfPeriod + 1);
-                l_Client.DownloadFile(l_additionalDocument4,
-                    Path.Combine(l_entryFolder, "additionalDocument4." + l_extension));
-            }
+        private static string GetMailingAddress(Entry entry)
+        {
+            StringBuilder sb = new StringBuilder();
+            if(!String.IsNullOrWhiteSpace(entry.AddressLine1))
+            sb.AppendLine(entry.AddressLine1);
+            if (!String.IsNullOrWhiteSpace(entry.AddressLine2))
+                sb.AppendLine(entry.AddressLine2);
+            sb.AppendLine(entry.City + ", " + entry.State + "-" + entry.ZipCode);
+            if (!String.IsNullOrWhiteSpace(entry.Country))
+                sb.AppendLine(entry.Country);
+            return sb.ToString();
+        }
+
+        private static string GetCollegeAddress(Entry entry)
+        {
+            StringBuilder sb = new StringBuilder();
+            if (!String.IsNullOrWhiteSpace(entry.CollegeAddressLine1))
+                sb.AppendLine(entry.CollegeAddressLine1);
+            if (!String.IsNullOrWhiteSpace(entry.CollegeAddressLine2))
+                sb.AppendLine(entry.CollegeAddressLine2);
+            sb.AppendLine(entry.CollegeCity + ", " + entry.CollegeState + "-" + entry.CollegeZipCode);
+            if (!String.IsNullOrWhiteSpace(entry.CollegeCountry))
+                sb.AppendLine(entry.CollegeCountry);
+            return sb.ToString();
         }
 
         private static string GetDocumentLink(string link)

@@ -100,8 +100,8 @@ namespace WufooExporter
         [JsonProperty("Field55")]
         public String AdditionalDocument4 { get; set; }
 
-        public String DateCreated { get; set; }
-        public String DateUpdated { get; set; }
+        public DateTime DateCreated { get; set; }
+        public string DateUpdated { get; set; }
         public String CreatedBy { get; set; }
         public String UpdatedBy { get; set; }
         public int CompleteSubmission { get; set; }
