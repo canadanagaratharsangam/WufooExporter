@@ -41,8 +41,8 @@ namespace WufooExporter
                l_distinctEntries.Where(i => String.IsNullOrWhiteSpace(i.LetterOfAttestationLink)
                ).ToList();
 
-            DownloadAndSaveEntries(l_completeDistinctApplications, "With 1 or more Document", true);
-            DownloadAndSaveEntries(l_incompleteDistinctApplications, "With No Documents", false);
+            DownloadAndSaveEntries(l_completeDistinctApplications, "With 1 or more Document");
+            DownloadAndSaveEntries(l_incompleteDistinctApplications, "With No Documents");
 
         }
 
@@ -66,9 +66,26 @@ namespace WufooExporter
             return l_mergedEntry;
         }
 
-        private static void DownloadAndSaveEntries(List<Entry> entries, string directoryName, bool downloadDocuments)
+        private static void DownloadAndSaveEntries(List<Entry> entries, string directoryName)
         {
-            throw new NotImplementedException();
+            foreach (Entry l_entry in entries)
+            {
+                string l_letterOfAttestationLink = GetDocumentLink(l_entry.LetterOfAttestationLink);
+                string l_additionalDocument1 = GetDocumentLink(l_entry.AdditionalDocument1);
+                string l_additionalDocument2 = GetDocumentLink(l_entry.AdditionalDocument2);
+                string l_additionalDocument3 = GetDocumentLink(l_entry.AdditionalDocument3);
+                string l_additionalDocument4 = GetDocumentLink(l_entry.AdditionalDocument4);
+            }
+        }
+
+        private static string GetDocumentLink(string link)
+        {
+            if (String.IsNullOrWhiteSpace(link))
+                return null;
+            var l_indexOfLinkStart = link.IndexOf("(", StringComparison.Ordinal);
+            if (l_indexOfLinkStart <= -1)
+                return null;
+            return link.Substring(l_indexOfLinkStart+1).TrimEnd(')');
         }
     }
 }
