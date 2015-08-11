@@ -47,7 +47,7 @@ namespace WufooExporter
                 l_client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(l_byteArray));
 
                 // 0 os the CNS form. update accordingly
-                HttpResponseMessage l_response = await l_client.GetAsync("api/v3/forms/0/entries.json?pageStart=" + pageStart + "&pageSize=" + countPerPage);
+                HttpResponseMessage l_response = await l_client.GetAsync("api/v3/forms/0/entries.json?system=true&pageStart=" + pageStart + "&pageSize=" + countPerPage);
                 if (l_response.IsSuccessStatusCode)
                 {
                     var l_json = await l_response.Content.ReadAsStringAsync();

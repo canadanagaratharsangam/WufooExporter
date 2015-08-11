@@ -104,6 +104,9 @@ namespace WufooExporter
         public String DateUpdated { get; set; }
         public String CreatedBy { get; set; }
         public String UpdatedBy { get; set; }
+        public int CompleteSubmission { get; set; }
+        [JsonProperty("LastPage")]
+        public int CompletedPages { get; set; }
 
 
     }
